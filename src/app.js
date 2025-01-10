@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const connectDB = require('./config/database');
+
+const User = require('./model/User');
+
 
 // custom basic  auth handler for all routes 
 app.use("/", (req, res, next) => {
@@ -10,6 +14,24 @@ app.use("/", (req, res, next) => {
     } else {
         res.status(401).send('Unauthorized');
     }
+});
+
+app.post('/signup', async (req, res) => {
+   const obj = {
+    firstName: 'suraj',
+    lastName: 'penugonda',
+    email: 'suraj@gmail.com',
+    age: 25,
+    geneder: 'male'
+   };
+
+    const user = new User(obj);
+    try {
+        await user.save();
+        res.send('user created succesfully')
+    } catch(err) {
+        console.log(err);
+    } 
 });
 
 app.get("/getdata", (req, res) => {
@@ -33,6 +55,9 @@ app.use("/", (err, req, res, next) => {
 });
 
 
-app.listen(7080, () => {
+app.listen(7081, () => {
     console.log('Server is running on port 7080');
+    connectDB().then(() => {
+        console.log('Connected to MongoDB');
+    });
 });
