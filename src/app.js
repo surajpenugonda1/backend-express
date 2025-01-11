@@ -18,6 +18,7 @@ app.use("/", (req, res, next) => {
     }
 });
 
+// crud methods for user collection 
 app.post('/signup', async (req, res) => {
    const obj = req.body;
     const user = new User(obj);
@@ -27,6 +28,34 @@ app.post('/signup', async (req, res) => {
     } catch(err) {
         console.log(err);
     } 
+});
+
+// get all 
+app.get('/users', async (req, res) => {
+    const users = await User.find();
+    res.send(users);
+});
+
+
+// get one 
+
+
+// get one by id
+
+// patch one by id
+app.patch('/users', async (req, res) => {
+    const {userId} = req.body;
+    await User.findByIdAndUpdate(userId, req.body);
+
+    res.send('user updated Successfully');
+});
+
+// delete one by id
+app.delete('/users', async (req, res) => {
+    const {userId} = req.body;
+    await User.findByIdAndDelete(userId);
+
+    res.send('user deleted Successfully');
 });
 
 app.get("/getdata", (req, res) => {
