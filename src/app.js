@@ -2,10 +2,11 @@ const express = require('express');
 const app = express();
 const connectDB = require('./config/database');
 const User = require('./model/User');
+const redisClient = require('./config/redis');
 
+app.use(express.json());    
 
-app.use(express.json());
-
+const clients = new Set();
 
 // custom basic  auth handler for all routes 
 app.use("/", (req, res, next) => {
@@ -34,6 +35,35 @@ app.post('/signup', async (req, res) => {
 app.get('/users', async (req, res) => {
     const users = await User.find();
     res.send(users);
+});
+
+
+
+app.get('/events', (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    });
+
+    const clientId = Date.now();
+    const client = {id: clientId, response: res}
+    clients.add(client);
+
+    req.on('close', () => {
+        clients.delete(client);
+    });
+
+});
+
+app.get('/sendeventclient', (req, res) => {
+    
+    const response = 'suraj sent message';
+    clients.forEach(client => {
+        client.response.write(`data: ${JSON.stringify({ response })}\n\n`);
+    });
+
+    res.send({success: true});
 });
 
 
@@ -68,7 +98,9 @@ app.get("/getdataerror", (req, res) => {
     res.send('Hello World');
 })
 
-app.use("/", (req, res) => {
+app.use("/", async (req, res) => {
+    redisClient.set('suraj', 'value');
+    console.log('Value set in redis');
     res.send('Inital Page for all');
 });
 
@@ -79,7 +111,7 @@ app.use("/", (err, req, res, next) => {
 });
 
 
-app.listen(7081, () => {
+app.listen(8991, () => {
     console.log('Server is running on port 7080');
     connectDB().then(() => {
         console.log('Connected to MongoDB');
