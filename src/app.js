@@ -10,6 +10,7 @@ const clients = new Set();
 
 // custom basic  auth handler for all routes 
 app.use("/", (req, res, next) => {
+    console.log('auth middleware')
     const token = 'xyz';
     const authHeader = 'xyz';
     if (token === authHeader) {
